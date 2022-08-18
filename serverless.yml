@@ -1,0 +1,205 @@
+service: sw-federation
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: eu-west-1
+  stage: dev
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - s3:PutObject
+        - s3:PutObjectAcl
+        - s3:DeleteObject
+        - s3:DeleteObjectAcl
+        - s3:GetObject
+        - s3:GetObjectAcl
+      Resource: "arn:aws:s3:::*"
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+        - dynamodb:Scan
+        - dynamodb:Query
+        - dynamodb:ListTables
+        - dynamodb:CreateTable
+        - dynamodb:DeleteTable
+      Resource: "arn:aws:dynamodb:*"
+
+
+custom:
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+      seed: true
+    seed:
+      domain:
+        sources:
+          - table: ${self:service}-${self:provider.stage}-cars
+            sources: [ ./src/services/car/models/data.json ]
+          - table: ${self:service}-${self:provider.stage}-chargers
+            sources: [ ./src/services/charger/models/data.json ]
+          - table: ${self:service}-${self:provider.stage}-users
+            sources: [ ./src/services/user/models/data.json ]
+  carsDB: ${self:service}-${self:provider.stage}-cars
+  chargersDB: ${self:service}-${self:provider.stage}-chargers
+  usersDB: ${self:service}-${self:provider.stage}-users
+
+functions:
+  ev:
+    handler: src/super-graph/handler.graphql
+    events:
+      - http:
+          path: ev
+          method: post
+          cors: true
+      - http:
+          path: ev
+          method: get
+          cors: true
+    environment:
+      URL: { "Fn::Join" : ["", ["https://", { "Ref" : "ApiGatewayRestApi" }, ".execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}" ] ]  }
+
+  cars:
+    handler: src/services/car/handler.graphql
+    events:
+      - http:
+          path: cars
+          method: post
+          cors: true
+      - http:
+          path: cars
+          method: get
+          cors: true
+    environment:
+      TABLE: ${self:custom.carsDB}
+
+  chargers:
+    handler: src/services/charger/handler.graphql
+    events:
+      - http:
+          path: chargers
+          method: post
+          cors: true
+      - http:
+          path: chargers
+          method: get
+          cors: true
+    environment:
+      TABLE: ${self:custom.chargersDB}
+
+  users:
+    handler: src/services/user/handler.graphql
+    events:
+      - http:
+          path: users
+          method: post
+          cors: true
+      - http:
+          path: users
+          method: get
+          cors: true
+    environment:
+      TABLE: ${self:custom.usersDB}
+
+resources:
+  Resources:
+    CarsDB:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:custom.carsDB}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: chargerId
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: UserIndex
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+          - IndexName: ChargerIndex
+            KeySchema:
+              - AttributeName: chargerId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+          - IndexName: ChargerUserIndex
+            KeySchema:
+              - AttributeName: chargerId
+                KeyType: HASH
+              - AttributeName: userId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    ChargersDB:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:custom.chargersDB}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+        GlobalSecondaryIndexes:
+          - IndexName: UserIndex
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+    UsersDB:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:custom.usersDB}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-dynamodb-local
+  - serverless-offline

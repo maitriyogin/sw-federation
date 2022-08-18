@@ -1,0 +1,29 @@
+{
+  "name": "sw-federation",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "stephen white",
+  "license": "MIT",
+  "scripts": {
+    "start": "serverless offline start",
+    "deploy": "serverless deploy",
+    "supergraph": "rover supergraph compose --config ./src/super-graph/supergraph.yaml > ./src/super-graph/supergraph.graphql",
+    "sls:dynamo:install": "sls dynamodb install"
+  },
+  "devDependencies": {
+    "prettier": "^2.7.1",
+    "serverless-dynamodb-local": "^0.2.40",
+    "serverless-offline": "^9.2.1",
+    "serverless-plugin-typescript": "^2.1.2",
+    "source-map-support": "^0.5.21",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "@apollo/gateway": "^2.0.5",
+    "@apollo/subgraph": "^2.0.5",
+    "apollo-server-lambda": "^3.10.1",
+    "graphql": "^16.5.0",
+    "ramda": "^0.28.0",
+    "uuid": "^8.3.2"
+  }
+}

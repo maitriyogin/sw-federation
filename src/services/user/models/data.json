@@ -1,0 +1,11 @@
+[
+  {
+    "id": "1",
+    "firstName": "stephen",
+    "lastName": "white",
+    "email": "stephen.white@mac.com",
+    "address": "offerstensvägen 6",
+    "age": 51,
+    "nationalSecurity": "7101058811"
+  }
+]

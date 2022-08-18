@@ -1,0 +1,35 @@
+aws --endpoint-url http://localhost:8000 dynamodb query \
+    --table-name sw-federation-dev-cars \
+    --index-name UserIndex \
+    --key-condition-expression "userId = :id" \
+    --expression-attribute-values  '{":id":{"S":"1"}}'
+
+aws --endpoint-url http://localhost:8000 dynamodb query \
+    --table-name sw-federation-dev-cars \
+    --index-name ChargerUserIndex \
+    --key-condition-expression "userId = :id AND chargerId = :chargerId" \
+    --expression-attribute-values  '{":id":{"S":"1"}, ":chargerId":{"S":"1"}}'
+
+aws --endpoint-url http://localhost:8000 dynamodb query \
+    --table-name sw-federation-dev-cars \
+    --key-condition-expression "id = :id" \
+    --expression-attribute-values  '{":id":{"S":"1"}}'
+
+aws --endpoint-url http://localhost:8000 dynamodb get-item \
+    --table-name sw-federation-dev-cars \
+    --key '{"id":{"S":"1"}}' \
+    --projection-expression "#id, #name" \
+    --expression-attribute-names '{"#id":"id", "#name":"name"}'
+
+aws --endpoint-url http://localhost:8000 dynamodb get-item \
+    --table-name sw-federation-dev-chargers \
+    --key '{"id":{"S":"1"}}' \
+    --projection-expression "#id, #productName" \
+    --expression-attribute-names '{"#id":"id", "#productName":"productName"}'
+
+aws --endpoint-url http://localhost:8000 dynamodb get-item \
+    --table-name sw-federation-dev-users \
+    --key '{"id":{"S":"1"}}' \
+    --projection-expression "#id, #firstName" \
+    --expression-attribute-names '{"#id":"id", "#firstName":"firstName"}'
+

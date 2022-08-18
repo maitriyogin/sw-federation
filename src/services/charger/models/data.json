@@ -1,0 +1,11 @@
+[
+  {
+    "id": "1",
+    "serialNumber": "1234",
+    "vendor": "easee",
+    "productName": "wall",
+    "color": "red",
+    "status": "offline",
+    "userId": "1"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "registrationNumber": "SHM96B",
+    "name": "ID 4",
+    "vin": "12345678",
+    "model": "ID 4",
+    "modelYear": "2021",
+    "userId": "1",
+    "chargerId": "1",
+    "batterySize": 77
+  },
+  {
+    "id": "2",
+    "registrationNumber": "MJD453",
+    "name": "POLESTAR 2",
+    "vin": "12345678",
+    "model": "POLESTAR 2",
+    "modelYear": "2021",
+    "batterySize": 77
+  }
+]
